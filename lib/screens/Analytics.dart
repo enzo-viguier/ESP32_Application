@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-class Settings extends StatelessWidget {
-  const Settings({super.key});
+class Analytics extends StatelessWidget {
+  const Analytics({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Analytics'),
       ),
       body: const Center(
-        child: Text('Settings Page'),
+        child: Text('Analytics Page'),
       ),
     );
   }
