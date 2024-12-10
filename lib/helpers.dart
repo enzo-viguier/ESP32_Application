@@ -26,18 +26,14 @@ Future<Response> apiCall(String endpoint,
   headers?.putIfAbsent("Content-Type", () => "application/json");
 
   // Définir l'URL de base
-  String url = "dummyapi.online";
-  var uri = Uri.http(url, endpoint, params);
-  print(uri);
-
+  String url = "apimobile-u6kf.onrender.com";
+  var uri = Uri.https(url, endpoint, params);
   // Choisir la méthode HTTP appropriée
   switch (method.toUpperCase()) {
     case "GET":
       return await http.get(uri, headers: headers);
-
     case "POST":
       return await http.post(uri, headers: headers, body: body);
-
     case "PUT":
       return await http.put(uri, headers: headers, body: body);
     case "DELETE":
