@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:esp32_app/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:esp32_app/screens/ControlPanel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -142,6 +142,6 @@ class _ConnectionAwareControlPanelState
 
   @override
   Widget build(BuildContext context) {
-    return const ControlPanel();
+    return const ScaffoldManager();
   }
 }

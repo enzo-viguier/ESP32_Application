@@ -60,61 +60,56 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Adresse ESP32",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Adresse ESP32",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: "192.56.32.1 ou http://myesp32",
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "192.56.32.1 ou http://myesp32",
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: _saveAddress,
+                child: const Text("Enregistrer"),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: _saveAddress,
-                  child: const Text("Enregistrer"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.clear();
-                    });
-                  },
-                  child: const Text("Réinitialiser"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Activer le son Villager",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Switch(
-                  value: _isVillagerSoundEnabled,
-                  onChanged: (value) => _saveSoundSetting(value),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _controller.clear();
+                  });
+                },
+                child: const Text("Réinitialiser"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Activer le son Villager",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Switch(
+                value: _isVillagerSoundEnabled,
+                onChanged: (value) => _saveSoundSetting(value),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
