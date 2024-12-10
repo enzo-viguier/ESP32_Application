@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:esp32_app/navbar.dart';
+import 'package:esp32_app/screens/Analytics.dart';
+import 'package:esp32_app/screens/ControlPanel.dart';
+import 'package:esp32_app/screens/Settings.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
@@ -142,6 +145,21 @@ class _ConnectionAwareControlPanelState
 
   @override
   Widget build(BuildContext context) {
-    return const ScaffoldManager();
+    return ScaffoldManager(
+      navigationItems: [
+        NavigationItem(
+            body: const Analytics(),
+            icon: const Icon(Icons.analytics),
+            title: "Analytics"),
+        NavigationItem(
+            body: const ControlPanel(),
+            icon: const Icon(Icons.home),
+            title: "Home"),
+        NavigationItem(
+            body: const Settings(),
+            icon: const Icon(Icons.settings),
+            title: "Settings"),
+      ],
+    );
   }
 }
