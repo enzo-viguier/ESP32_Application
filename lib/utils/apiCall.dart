@@ -8,13 +8,29 @@ Future<Response> getPhotoCell() {
   return apiCall("/light");
 }
 
-Future<Response> getTemps({String unit = "c"}) {
-  return apiCall("/light/$unit", params: {"unit": unit});
+// Future<Response> getTemps({String unit = "c"}) {
+//   return apiCall("/light/$unit", params: {"unit": unit});
+// }
+
+Future<Response> getTemps() {
+  return apiCall("/temperature");
 }
 
 Future<Response> switchLed(bool state) {
-  if (state) return apiCall("/light/on");
-  return apiCall("/light/off");
+  if (state) return apiCall("/led/on");
+  return apiCall("/led/off");
+}
+
+Future<Response> setLedColor(int r, int g, int b) {
+  return apiCall("/led/rgb/set", method: "GET", body: {"r": r, "g": g, "b": b});
+}
+
+Future<Response> playSong(String song) {
+  return apiCall("/play", params: {"song": song});
+}
+
+Future<Response> stopSong() {
+  return apiCall("/play/stop");
 }
 
 Future<Response> apiCall(String endpoint,
@@ -26,8 +42,9 @@ Future<Response> apiCall(String endpoint,
   headers?.putIfAbsent("Content-Type", () => "application/json");
 
   // Définir l'URL de base
-  String url = "apimobile-u6kf.onrender.com";
-  var uri = Uri.https(url, endpoint, params);
+  // String url = "apimobile-u6kf.onrender.com";
+  String url = "192.168.1.115";
+  var uri = Uri.http(url, endpoint, params);
   // Choisir la méthode HTTP appropriée
   switch (method.toUpperCase()) {
     case "GET":
