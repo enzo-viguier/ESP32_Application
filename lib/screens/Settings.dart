@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/PlaySound.dart';
+
 class Settings extends StatefulWidget {
   const Settings({super.key});
 
@@ -82,11 +84,15 @@ class _SettingsState extends State<Settings> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton(
-                onPressed: _saveAddress,
+                onPressed: () {
+                  _saveAddress();
+                  PlaySound().play('simple1');
+                },
                 child: const Text("Enregistrer"),
               ),
               ElevatedButton(
                 onPressed: () {
+                  PlaySound().play('death');
                   setState(() {
                     _controller.clear();
                   });
