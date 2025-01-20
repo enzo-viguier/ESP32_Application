@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "69494869682",
+    "project_id": "esp32-e82a7",
+    "storage_bucket": "esp32-e82a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69494869682:android:6a14e14f8269d1728d83ab",
+        "android_client_info": {
+          "package_name": "fr.umontpellier.esp32_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTbfSWs4B7CB9PvsbvqQD7WJFWv5m9CSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
