@@ -12,11 +12,14 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _thresholdController = TextEditingController();
   final String _addressPrefKey = 'esp32_address';
   final String _soundPrefKey = 'villager_sound_enabled';
   final String _tempUnitPrefKey = 'temperature_unit_celsius';
+  final String _thresholdPrefKey = 'luminosity_threshold';
   bool _isVillagerSoundEnabled = false;
-  bool _isCelsiusSelected = true; // Valeur par défaut (Celsius)
+  bool _isCelsiusSelected = true;
+  bool _isThresholdEnabled = false;
 
   @override
   void initState() {
@@ -24,23 +27,27 @@ class _SettingsState extends State<Settings> {
     _loadSettings();
   }
 
-  // Charger les paramètres enregistrés
   Future<void> _loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? savedAddress = prefs.getString(_addressPrefKey);
     bool savedSoundSetting = prefs.getBool(_soundPrefKey) ?? false;
     bool savedTempUnit = prefs.getBool(_tempUnitPrefKey) ?? true;
+    String? savedThreshold = prefs.getString(_thresholdPrefKey);
+    bool savedThresholdEnabled = prefs.getBool('threshold_enabled') ?? false;
 
     setState(() {
       if (savedAddress != null) {
         _controller.text = savedAddress;
       }
+      if (savedThreshold != null) {
+        _thresholdController.text = savedThreshold;
+      }
       _isVillagerSoundEnabled = savedSoundSetting;
       _isCelsiusSelected = savedTempUnit;
+      _isThresholdEnabled = savedThresholdEnabled;
     });
   }
 
-  // Enregistrer l'adresse et l'état du switch
   Future<void> _saveAddress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_addressPrefKey, _controller.text);
@@ -81,12 +88,42 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  Future<void> _saveThresholdSettings() async {
+    if (_thresholdController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez entrer une valeur de seuil')),
+      );
+      return;
+    }
+
+    try {
+      int threshold = int.parse(_thresholdController.text);
+      if (threshold < 0 || threshold > 1000) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Le seuil doit être entre 0 et 1000 lumens')),
+        );
+        return;
+      }
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_thresholdPrefKey, threshold.toString());
+      await prefs.setBool('threshold_enabled', _isThresholdEnabled);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seuil de luminosité enregistré !')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez entrer un nombre valide')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
           const Text(
             "Adresse ESP32",
@@ -123,6 +160,46 @@ class _SettingsState extends State<Settings> {
             ],
           ),
           const SizedBox(height: 32),
+
+          // Nouvelle section pour le seuil de luminosité
+          const Text(
+            "Seuil de luminosité",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _thresholdController,
+                  keyboardType: TextInputType.number,
+                  enabled: _isThresholdEnabled,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Seuil en lumens (0-1000)",
+                    suffixText: "lumens",
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Switch(
+                value: _isThresholdEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _isThresholdEnabled = value;
+                  });
+                  _saveThresholdSettings();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: _isThresholdEnabled ? _saveThresholdSettings : null,
+            child: const Text("Enregistrer le seuil"),
+          ),
+          const SizedBox(height: 32),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

@@ -12,9 +12,29 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:csv/csv.dart';
+import 'dart:io';
 
-class Analytics extends StatelessWidget {
+class Analytics extends StatefulWidget {
   const Analytics({super.key});
+
+  @override
+  State<Analytics> createState() => _AnalyticsState();
+}
+
+class _AnalyticsState extends State<Analytics> {
+
+  Future<void> _exportToPDF() async {
+
+  }
+
+
+  Future<void> _exportToCSV() async {
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +64,40 @@ class Analytics extends StatelessWidget {
             Expanded(
               child: LineChart(_lightChart()),
             ),
+            const SizedBox(height: 24),
+            // Add export buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _exportToPDF,
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('Exporter en PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _exportToCSV,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Exporter en CSV'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

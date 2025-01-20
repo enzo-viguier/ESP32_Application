@@ -5,6 +5,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:esp32_app/utils/getSettings.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/apiCall.dart';
 
 class ControlPanel extends StatefulWidget {
@@ -21,6 +22,9 @@ class _ControlPanelState extends State<ControlPanel> {
   String luminosity = "Loading";
   String temperature = "Loading";
   Color selectedColor = Colors.blue;
+  bool isThresholdEnabled = false;
+  int? luminosityThreshold;
+  bool isAutoControl = false;
 
   late Timer timer;
 
@@ -46,10 +50,41 @@ class _ControlPanelState extends State<ControlPanel> {
   @override
   void initState() {
     super.initState();
+    _loadThresholdSettings();
     timer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
       updateSensors();
     });
   }
+
+  Future<void> _loadThresholdSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isThresholdEnabled = prefs.getBool('threshold_enabled') ?? false;
+      String? threshold = prefs.getString('luminosity_threshold');
+      if (threshold != null) {
+        luminosityThreshold = int.tryParse(threshold);
+      }
+    });
+  }
+
+  void _checkThresholdAndUpdateLED(int currentLuminosity) async {
+    if (!isThresholdEnabled || luminosityThreshold == null) return;
+
+    bool shouldLedBeOn = currentLuminosity < luminosityThreshold!;
+
+    if (shouldLedBeOn != ledState) {
+      try {
+        await switchLed(shouldLedBeOn);
+        setState(() {
+          ledState = shouldLedBeOn;
+          isAutoControl = true;
+        });
+      } catch (e) {
+        logger.e('Erreur lors de la commutation automatique de la LED : $e');
+      }
+    }
+  }
+
 
   @override
   void dispose() {
@@ -62,15 +97,19 @@ class _ControlPanelState extends State<ControlPanel> {
     // Mettre à jour la luminosité
     try {
       final response = await getPhotoCell();
+      final luminosityValue = jsonDecode(response.body)["value"];
       setState(() {
-        luminosity = jsonDecode(response.body)["value"].toString() + "  lumens";
+        luminosity = "$luminosityValue lumens";
       });
+
+      // Vérifier le seuil et mettre à jour la LED si nécessaire
+      _checkThresholdAndUpdateLED(luminosityValue);
+
     } catch (e) {
       setState(() {
         luminosity = "Erreur";
       });
     }
-
     // Mettre à jour la température
     try {
       // final response = await getTemps(unit: "c");
@@ -90,14 +129,21 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   void toggleLed(bool state) async {
+    if (isThresholdEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Désactivez le contrôle automatique dans les paramètres pour contrôler manuellement la LED'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     try {
-      if (state) {
-        await switchLed(true);
-      } else {
-        await switchLed(false);
-      }
+      await switchLed(state);
       setState(() {
         ledState = state;
+        isAutoControl = false;
       });
     } catch (e) {
       logger.e('Erreur lors de la commutation de la LED : $e');
@@ -136,12 +182,22 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   Future<void> sendColorToLed(Color color) async {
+    if (isThresholdEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Désactivez le contrôle automatique dans les paramètres pour changer la couleur'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     final r = color.red.toString();
     final g = color.green.toString();
     final b = color.blue.toString();
 
     try {
-      await setLedColor(r, g, b); // Appel à la fonction pour mettre à jour la couleur LED
+      await setLedColor(r, g, b);
     } catch (e) {
       logger.e('Erreur lors de la mise à jour de la couleur LED : $e');
       ScaffoldMessenger.of(context).showSnackBar(
