@@ -3,12 +3,18 @@ import 'dart:async';
 import 'package:esp32_app/screens/Analytics.dart';
 import 'package:esp32_app/screens/ControlPanel.dart';
 import 'package:esp32_app/screens/Settings.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 import 'components/ScaffoldManager.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
