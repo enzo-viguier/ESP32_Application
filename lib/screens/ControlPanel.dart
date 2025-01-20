@@ -46,7 +46,7 @@ class _ControlPanelState extends State<ControlPanel> {
     try {
       final response = await getPhotoCell();
       setState(() {
-        luminosity = jsonDecode(response.body)["value"].toString();
+        luminosity = jsonDecode(response.body)["value"].toString() + "  lumens";
       });
     } catch (e) {
       setState(() {
@@ -294,7 +294,7 @@ class _ControlPanelState extends State<ControlPanel> {
                         children: [
                           const Icon(Icons.wb_sunny, size: 40, color: Colors.yellow),
                           const SizedBox(height: 10),
-                          Text("Luminosité : \n $luminosity lumen",
+                          Text("Luminosité : \n $luminosity",
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
