@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:esp32_app/utils/getSettings.dart';
 import 'package:logger/logger.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/apiCall.dart';
-
 
 class ControlPanel extends StatefulWidget {
   const ControlPanel({super.key});
@@ -20,16 +18,34 @@ class _ControlPanelState extends State<ControlPanel> {
   var logger = Logger();
   bool ledState = false;
   String selectedSong = "mario";
-  String luminosity = "Chargement...";
-  String temperature = "Chargement...";
+  String luminosity = "Loading";
+  String temperature = "Loading";
   Color selectedColor = Colors.blue;
 
   late Timer timer;
 
+  TextStyle get titleStyle => GoogleFonts.poppins(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.5,
+  );
+
+  TextStyle get bodyStyle => GoogleFonts.poppins(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.3,
+  );
+
+  TextStyle get valueStyle => GoogleFonts.poppins(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.3,
+  );
+
+
   @override
   void initState() {
     super.initState();
-    // Initialiser les mises à jour des capteurs
     timer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
       updateSensors();
     });
@@ -40,6 +56,7 @@ class _ControlPanelState extends State<ControlPanel> {
     timer.cancel();
     super.dispose();
   }
+
 
   void updateSensors() async {
     // Mettre à jour la luminosité
@@ -184,65 +201,73 @@ class _ControlPanelState extends State<ControlPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section LED
+            Text('LED', style: titleStyle),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'LED',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Transform.scale(
+                  scaleX: 1.0,
+                  scaleY: 1.0,
+                  child: Switch(
+                    value: ledState,
+                    onChanged: toggleLed,
+                    activeColor: Colors.red,
+                    inactiveTrackColor: Colors.green.withOpacity(0.5),
+                    inactiveThumbColor: Colors.green,
+                  ),
                 ),
-                Row(
-                  children: [
-                    Switch(
-                      value: ledState,
-                      onChanged: toggleLed,
+                TextButton(
+                  onPressed: openColorPicker,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  child: Text(
+                    'Choisir la couleur',
+                    style: bodyStyle.copyWith(
+                      color: Theme.of(context).primaryColor,
                     ),
-                    TextButton(
-                      onPressed: openColorPicker,
-                      child: const Text('Choisir la couleur'),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
             // Section Lecteur de musique
-            const Text(
-              'Lecteur de musique',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text('Lecteur de musique', style: titleStyle),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               value: selectedSong,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
                 labelText: 'Choisir le son',
+                labelStyle: bodyStyle,
               ),
-              items: const [
+              style: bodyStyle,
+              items: [
                 DropdownMenuItem(
                   value: 'mario',
-                  child: Text('Mario'),
+                  child: Text('Mario', style: bodyStyle),
                 ),
                 DropdownMenuItem(
                   value: 'pacman',
-                  child: Text('Pacman'),
+                  child: Text('Pacman', style: bodyStyle),
                 ),
                 DropdownMenuItem(
                   value: 'tetris',
-                  child: Text('Tetris'),
+                  child: Text('Tetris', style: bodyStyle),
                 ),
                 DropdownMenuItem(
                   value: 'got',
-                  child: Text('Games Of Thrones'),
+                  child: Text('Games Of Thrones', style: bodyStyle),
                 ),
                 DropdownMenuItem(
                   value: 'harrypotter',
-                  child: Text('Harry Potter'),
+                  child: Text('Harry Potter', style: bodyStyle),
                 ),
                 DropdownMenuItem(
                   value: 'starwars',
-                  child: Text('Star Wars'),
+                  child: Text('Star Wars', style: bodyStyle),
                 ),
               ],
               onChanged: (value) {
@@ -273,56 +298,109 @@ class _ControlPanelState extends State<ControlPanel> {
             const SizedBox(height: 20),
 
             // Section Capteurs
-            const Text(
-              'Capteurs',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text('Capteurs', style: titleStyle),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 // Luminosité
-                Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.wb_sunny, size: 40, color: Colors.yellow),
-                          const SizedBox(height: 10),
-                          Text("Luminosité : \n $luminosity",
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Container(
+                  width: 160,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Icon in top left
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow,
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        ],
+                          child: const Icon(Icons.wb_sunny, size: 24, color: Colors.white),
+                        ),
                       ),
-                    ),
-                  ],
+                      // Content
+                      Padding(
+                        padding: const EdgeInsets.only(top: 48),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              luminosity,
+                              style: valueStyle.copyWith(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Luminosité",
+                              style: bodyStyle.copyWith(
+                                color: Colors.black54,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 // Température
-                Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.red[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.thermostat, size: 40, color: Colors.red),
-                          const SizedBox(height: 10),
-                          Text("Température : \n $temperature",
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Container(
+                  width: 160,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Icon in top right
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        ],
+                          child: const Icon(Icons.thermostat, size: 24, color: Colors.white),
+                        ),
                       ),
-                    ),
-                  ],
+                      // Content
+                      Padding(
+                        padding: const EdgeInsets.only(top: 48),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              temperature,
+                              style: valueStyle.copyWith(fontSize: 20),
+                              textAlign: TextAlign.left,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Température",
+                              style: bodyStyle.copyWith(
+                                color: Colors.black54,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -331,4 +409,5 @@ class _ControlPanelState extends State<ControlPanel> {
       ),
     );
   }
+
 }
