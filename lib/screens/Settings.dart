@@ -14,7 +14,9 @@ class _SettingsState extends State<Settings> {
   final TextEditingController _controller = TextEditingController();
   final String _addressPrefKey = 'esp32_address';
   final String _soundPrefKey = 'villager_sound_enabled';
+  final String _tempUnitPrefKey = 'temperature_unit_celsius';
   bool _isVillagerSoundEnabled = false;
+  bool _isCelsiusSelected = true; // Valeur par défaut (Celsius)
 
   @override
   void initState() {
@@ -27,12 +29,14 @@ class _SettingsState extends State<Settings> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? savedAddress = prefs.getString(_addressPrefKey);
     bool savedSoundSetting = prefs.getBool(_soundPrefKey) ?? false;
+    bool savedTempUnit = prefs.getBool(_tempUnitPrefKey) ?? true;
 
     setState(() {
       if (savedAddress != null) {
         _controller.text = savedAddress;
       }
       _isVillagerSoundEnabled = savedSoundSetting;
+      _isCelsiusSelected = savedTempUnit;
     });
   }
 
@@ -55,6 +59,23 @@ class _SettingsState extends State<Settings> {
       SnackBar(
         content: Text(
           value ? 'Son Villager activé !' : 'Son Villager désactivé !',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveTemperatureUnit(bool isCelsius) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_tempUnitPrefKey, isCelsius);
+    setState(() {
+      _isCelsiusSelected = isCelsius;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isCelsius
+              ? 'Température en Celsius activée !'
+              : 'Température en Fahrenheit activée !',
         ),
       ),
     );
@@ -102,6 +123,20 @@ class _SettingsState extends State<Settings> {
             ],
           ),
           const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Température en Celsius",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Switch(
+                value: _isCelsiusSelected,
+                onChanged: (value) => _saveTemperatureUnit(value),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

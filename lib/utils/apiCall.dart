@@ -1,8 +1,10 @@
 import 'dart:collection';
 import 'dart:ffi';
 
+import 'package:esp32_app/utils/getSettings.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:logger/logger.dart';
 
 Future<Response> getPhotoCell() {
   return apiCall("/light");
@@ -21,8 +23,8 @@ Future<Response> switchLed(bool state) {
   return apiCall("/led/off");
 }
 
-Future<Response> setLedColor(int r, int g, int b) {
-  return apiCall("/led/rgb/set", method: "GET", body: {"r": r, "g": g, "b": b});
+Future<Response> setLedColor(String r, String g, String b) {
+  return apiCall("/led/rgb/set", method: "GET", params: {"red": r, "green": g, "blue": b});
 }
 
 Future<Response> playSong(String song) {
@@ -38,12 +40,10 @@ Future<Response> apiCall(String endpoint,
     Map<String, dynamic>? body,
     Map<String, String>? headers,
     Map<String, String>? params}) async {
-  // Définir les en-têtes par défaut
-  headers?.putIfAbsent("Content-Type", () => "application/json");
+    // Définir les en-têtes par défaut
+    headers?.putIfAbsent("Content-Type", () => "application/json");
 
-  // Définir l'URL de base
-  // String url = "apimobile-u6kf.onrender.com";
-  String url = "192.168.1.115";
+  String url = await SettingsManager.getESPAddress() ?? '';
   var uri = Uri.http(url, endpoint, params);
   // Choisir la méthode HTTP appropriée
   switch (method.toUpperCase()) {

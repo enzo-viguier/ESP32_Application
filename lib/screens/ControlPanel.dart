@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:esp32_app/models/PlaySound.dart';
-import 'package:esp32_app/screens/Analytics.dart';
-import 'package:esp32_app/screens/Settings.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:esp32_app/utils/getSettings.dart';
+import 'package:logger/logger.dart';
 
 import '../utils/apiCall.dart';
 
@@ -19,6 +17,7 @@ class ControlPanel extends StatefulWidget {
 }
 
 class _ControlPanelState extends State<ControlPanel> {
+  var logger = Logger();
   bool ledState = false;
   String selectedSong = "mario";
   String luminosity = "Chargement...";
@@ -59,9 +58,12 @@ class _ControlPanelState extends State<ControlPanel> {
     try {
       // final response = await getTemps(unit: "c");
       final response = await getTemps();
-      setState(() {
-        temperature = temperature = jsonDecode(response.body)["temperature_celsius"].toStringAsFixed(2);;
-        // temperature = response.body;
+      setState(() async {
+        if(await SettingsManager.celsiusSelected()){
+          temperature = jsonDecode(response.body)["temperature_celsius"].toStringAsFixed(2) + " °C";
+        } else {
+          temperature = jsonDecode(response.body)["temperature_fahrenheit"].toStringAsFixed(2) + " °F";
+        }
       });
     } catch (e) {
       setState(() {
@@ -81,7 +83,12 @@ class _ControlPanelState extends State<ControlPanel> {
         ledState = state;
       });
     } catch (e) {
-      // Gestion des erreurs
+      logger.e('Erreur lors de la commutation de la LED : $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la commutation de la LED'),
+        ),
+      );
     }
   }
 
@@ -89,7 +96,12 @@ class _ControlPanelState extends State<ControlPanel> {
     try {
       await playSong(selectedSong);
     } catch (e) {
-      // Gestion des erreurs
+      logger.e('Erreur lors de la lecture de la chanson : $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la lecture de la chanson'),
+        ),
+      );
     }
   }
 
@@ -97,7 +109,12 @@ class _ControlPanelState extends State<ControlPanel> {
     try {
       await stopSong();
     } catch (e) {
-      // Gestion des erreurs
+      logger.e('Erreur lors de l\'arrêt de la chanson : $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de l\'arrêt de la chanson'),
+        ),
+      );
     }
   }
 
@@ -109,7 +126,12 @@ class _ControlPanelState extends State<ControlPanel> {
     try {
       await setLedColor(r, g, b); // Appel à la fonction pour mettre à jour la couleur LED
     } catch (e) {
-      debugPrint('Erreur lors de l\'envoi de la couleur LED : $e');
+      logger.e('Erreur lors de la mise à jour de la couleur LED : $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la mise à jour de la couleur LED'),
+        ),
+      );
     }
   }
 
@@ -127,7 +149,7 @@ class _ControlPanelState extends State<ControlPanel> {
               });
               await sendColorToLed(color);
             },
-            pickersEnabled: <ColorPickerType, bool>{
+            pickersEnabled: const <ColorPickerType, bool>{
               ColorPickerType.wheel: true,
               ColorPickerType.primary: false,
               ColorPickerType.accent: false,
@@ -294,7 +316,7 @@ class _ControlPanelState extends State<ControlPanel> {
                         children: [
                           const Icon(Icons.thermostat, size: 40, color: Colors.red),
                           const SizedBox(height: 10),
-                          Text("Température : \n $temperature °C",
+                          Text("Température : \n $temperature",
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],

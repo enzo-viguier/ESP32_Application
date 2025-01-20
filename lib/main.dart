@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:esp32_app/screens/Analytics.dart';
 import 'package:esp32_app/screens/ControlPanel.dart';
 import 'package:esp32_app/screens/Settings.dart';
-import 'package:esp32_app/screens/TestColorPicker.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
