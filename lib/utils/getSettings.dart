@@ -20,9 +20,4 @@ class SettingsManager {
     return prefs.getBool(_tempUnitPrefKey) ?? true; // Par défaut : true (Celsius)
   }
 
-  // Vérifier si le son Villager est activé
-  static Future<bool> villagerSoundActivated() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_soundPrefKey) ?? false; // Par défaut : false
-  }
 }
