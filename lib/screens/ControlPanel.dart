@@ -38,6 +38,7 @@ class _ControlPanelState extends State<ControlPanel> {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.3,
+    color: Colors.black,
   );
 
   TextStyle get valueStyle => GoogleFonts.poppins(
@@ -224,7 +225,7 @@ class _ControlPanelState extends State<ControlPanel> {
             },
             pickersEnabled: const <ColorPickerType, bool>{
               ColorPickerType.wheel: true,
-              ColorPickerType.primary: false,
+              ColorPickerType.primary: true,
               ColorPickerType.accent: false,
             },
             enableShadesSelection: false,
@@ -268,9 +269,9 @@ class _ControlPanelState extends State<ControlPanel> {
                   child: Switch(
                     value: ledState,
                     onChanged: toggleLed,
-                    activeColor: Colors.red,
-                    inactiveTrackColor: Colors.green.withOpacity(0.5),
-                    inactiveThumbColor: Colors.green,
+                    activeColor: Colors.green,
+                    inactiveTrackColor: Colors.red.withOpacity(0.5),
+                    inactiveThumbColor: Colors.red,
                   ),
                 ),
                 TextButton(
