@@ -84,6 +84,9 @@ class _ControlPanelState extends State<ControlPanel> {
         logger.e('Erreur lors de la commutation automatique de la LED : $e');
       }
     }
+    else {
+      await switchLed(ledState);
+    }
   }
 
 

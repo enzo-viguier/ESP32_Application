@@ -98,9 +98,9 @@ class _SettingsState extends State<Settings> {
 
     try {
       int threshold = int.parse(_thresholdController.text);
-      if (threshold < 0 || threshold > 1000) {
+      if (threshold < 0 || threshold > 4000) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Le seuil doit être entre 0 et 1000 lumens')),
+          const SnackBar(content: Text('Le seuil doit être entre 0 et 4000 lumens')),
         );
         return;
       }
@@ -176,7 +176,7 @@ class _SettingsState extends State<Settings> {
                   enabled: _isThresholdEnabled,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    hintText: "Seuil en lumens (0-1000)",
+                    hintText: "Seuil en lumens (0-4000)",
                     suffixText: "lumens",
                   ),
                 ),
