@@ -39,9 +39,6 @@ class _AnalyticsState extends State<Analytics> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
