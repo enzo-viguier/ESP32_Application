@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:esp32_app/utils/getSettings.dart';
@@ -7,6 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/apiCall.dart';
+import '../utils/sensor__data_manager.dart';
 
 class ControlPanel extends StatefulWidget {
   const ControlPanel({super.key});
@@ -104,6 +106,7 @@ class _ControlPanelState extends State<ControlPanel> {
       final luminosityValue = jsonDecode(response.body)["value"];
       setState(() {
         luminosity = "$luminosityValue lumens";
+        addLightData(int.parse(luminosityValue));
       });
 
       // Vérifier le seuil et mettre à jour la LED si nécessaire
@@ -111,6 +114,14 @@ class _ControlPanelState extends State<ControlPanel> {
 
     } catch (e) {
       setState(() {
+
+        // TODO : ajout temporaire dans la BD pour les tests
+        // Variable temporaire pour les tests de la luminosité (entre 1000 et 3000) en int
+        // var tmpLuminosity = 1000 + (3000 - 1000) * Random().nextInt(1000);
+        //
+        // addLightData(tmpLuminosity);
+        // ====
+
         luminosity = "Erreur";
       });
     }
@@ -124,9 +135,19 @@ class _ControlPanelState extends State<ControlPanel> {
         } else {
           temperature = jsonDecode(response.body)["temperature_fahrenheit"].toStringAsFixed(2) + " °F";
         }
+        addTemperatureData(double.parse(jsonDecode(response.body)["temperature_celsius"].toStringAsFixed(2)), double.parse(jsonDecode(response.body)["temperature_fahrenheit"].toStringAsFixed(2)));
       });
     } catch (e) {
       setState(() {
+
+        // TODO : ajout temporaire dans la BD pour les tests
+        // var tmpCelsius = 20 + (30 - 20) * Random().nextDouble();
+        //
+        // var tmpFahrenheit = (tmpCelsius * 9/5) + 32;
+        //
+        // addTemperatureData(tmpCelsius, tmpFahrenheit);
+        // ====
+
         temperature = "Erreur";
       });
     }
