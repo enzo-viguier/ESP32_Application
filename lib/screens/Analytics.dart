@@ -222,36 +222,43 @@ class _AnalyticsState extends State<Analytics> {
   Future<void> _fetchTemperatureData() async {
     List<List<dynamic>>? temperatureData = await getTemperatureData();
     if (temperatureData != null) {
-      logger.i('Temperature data for chart: $temperatureData');
+      // Trier les données par timestamp
+      temperatureData.sort((a, b) => DateTime.parse(a[0]).compareTo(DateTime.parse(b[0])));
+
+      // Trouver le timestamp minimum pour normaliser l'axe x
+      DateTime minTimestamp = DateTime.parse(temperatureData[0][0]);
+
       setState(() {
         _temperatureSpots = temperatureData.map((data) {
-          double time =
-              DateTime.parse(data[0]).millisecondsSinceEpoch.toDouble();
+          DateTime timestamp = DateTime.parse(data[0]);
+          // Convertir la différence de temps en minutes depuis le premier point
+          double x = timestamp.difference(minTimestamp).inSeconds.toDouble();
           double temp = _isCelsius ? data[1].toDouble() : data[2].toDouble();
-          return FlSpot(time, temp);
+          return FlSpot(x, temp);
         }).toList();
       });
-    } else {
-      logger.e('Failed to fetch temperature data');
     }
   }
 
+// Même chose pour les données de luminosité
   Future<void> _fetchLightData() async {
-    // Récupère les données de lumière depuis Firebase
     List<List<dynamic>>? lightData = await getLightData();
-
     if (lightData != null) {
+      // Trier les données par timestamp
+      lightData.sort((a, b) => DateTime.parse(a[0]).compareTo(DateTime.parse(b[0])));
+
+      // Trouver le timestamp minimum pour normaliser l'axe x
+      DateTime minTimestamp = DateTime.parse(lightData[0][0]);
+
       setState(() {
         _lightSpots = lightData.map((data) {
-          double time = DateTime.parse(data[0])
-              .millisecondsSinceEpoch
-              .toDouble(); // Timestamp
-          double lumens = data[1].toDouble(); // Lumens
-          return FlSpot(time, lumens);
+          DateTime timestamp = DateTime.parse(data[0]);
+          // Convertir la différence de temps en minutes depuis le premier point
+          double x = timestamp.difference(minTimestamp).inSeconds.toDouble();
+          double lumens = data[1].toDouble();
+          return FlSpot(x, lumens);
         }).toList();
       });
-    } else {
-      logger.e('Failed to fetch light data');
     }
   }
 
@@ -286,85 +293,13 @@ class _AnalyticsState extends State<Analytics> {
     );
   }
 
-  // LineChartData _temperatureChart() {
-  //   return LineChartData(
-  //     gridData: FlGridData(show: true),
-  //     titlesData: FlTitlesData(
-  //       bottomTitles: AxisTitles(
-  //         sideTitles: SideTitles(
-  //           showTitles: true,
-  //           getTitlesWidget: (value, meta) => Text("${value.toInt()}s"),
-  //         ),
-  //       ),
-  //       leftTitles: AxisTitles(
-  //         sideTitles: SideTitles(
-  //           showTitles: true,
-  //           getTitlesWidget: (value, meta) =>
-  //               Text("${value.toStringAsFixed(1)} ${_isCelsius ? '°C' : '°F'}"),
-  //         ),
-  //       ),
-  //     ),
-  //     borderData: FlBorderData(
-  //       show: true,
-  //       border: const Border(
-  //         top: BorderSide.none,
-  //         right: BorderSide.none,
-  //         bottom: BorderSide(width: 1),
-  //         left: BorderSide(width: 1),
-  //       ),
-  //     ),
-  //     lineBarsData: [
-  //       LineChartBarData(
-  //         spots: _temperatureSpots,
-  //         isCurved: true,
-  //         color: Colors.red,
-  //         barWidth: 3,
-  //         belowBarData: BarAreaData(show: false),
-  //       ),
-  //     ],
-  //   );
-  // }
-  //
-  // LineChartData _lightChart() {
-  //   return LineChartData(
-  //     gridData: FlGridData(show: true),
-  //     titlesData: FlTitlesData(
-  //       bottomTitles: AxisTitles(
-  //         sideTitles: SideTitles(
-  //           showTitles: true,
-  //           getTitlesWidget: (value, meta) {
-  //             DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-  //             return Text("${date.hour}:${date.minute}");
-  //           },
-  //         ),
-  //       ),
-  //       leftTitles: AxisTitles(
-  //         sideTitles: SideTitles(
-  //           showTitles: true,
-  //           getTitlesWidget: (value, meta) => Text("${value.toInt()} lm"),
-  //         ),
-  //       ),
-  //     ),
-  //     borderData: FlBorderData(
-  //       show: true,
-  //       border: const Border(
-  //         top: BorderSide.none,
-  //         right: BorderSide.none,
-  //         bottom: BorderSide(width: 1),
-  //         left: BorderSide(width: 1),
-  //       ),
-  //     ),
-  //     lineBarsData: [
-  //       LineChartBarData(
-  //         spots: _lightSpots,
-  //         isCurved: true,
-  //         color: Colors.blue,
-  //         barWidth: 3,
-  //         belowBarData: BarAreaData(show: false),
-  //       ),
-  //     ],
-  //   );
-  // }
+
+  String formatTime(double value) {
+    int totalSeconds = value.toInt();
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return "${minutes > 0 ? '${minutes}m' : ''}${seconds}s";
+  }
 
   LineChartData _temperatureChart() {
     return LineChartData(
@@ -374,16 +309,13 @@ class _AnalyticsState extends State<Analytics> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (value, meta) {
-              if (value.toInt() % 5 != 0) return const SizedBox(); // Affiche un label sur 5
-              DateTime date =
-                  DateTime.fromMillisecondsSinceEpoch(value.toInt());
-              return Transform.rotate(
-                angle: 1.57, // Rotation de 90 degrés (vertical)
-                child: Text("${date.hour}H${date.minute}:${date.second}",
-                    style: TextStyle(fontSize: 10)),
+              if (value <= 0 || value.toInt() % 30 != 0) return const SizedBox();
+              return Text(
+                formatTime(value),
+                style: const TextStyle(fontSize: 10),
               );
             },
-            reservedSize: 32, // Ajustez pour laisser de l'espace vertical
+            reservedSize: 22,
           ),
         ),
         topTitles: const AxisTitles(
@@ -396,9 +328,8 @@ class _AnalyticsState extends State<Analytics> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (value, meta) =>
-                Text("${value.toStringAsFixed(1)} ${_isCelsius ? '°C' : '°F'}"),
-            // °C ou °F
-            reservedSize: 28, // Espace pour les labels
+                Text("${value.toStringAsFixed(1)}${_isCelsius ? '°C' : '°F'}"),
+            reservedSize: 40,
           ),
         ),
       ),
@@ -415,10 +346,10 @@ class _AnalyticsState extends State<Analytics> {
         LineChartBarData(
           spots: _temperatureSpots,
           isCurved: true,
-          // Ligne courbée
           color: Colors.red,
           barWidth: 3,
           belowBarData: BarAreaData(show: false),
+          dotData: FlDotData(show: true),
         ),
       ],
     );
@@ -432,15 +363,13 @@ class _AnalyticsState extends State<Analytics> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (value, meta) {
-              DateTime date =
-                  DateTime.fromMillisecondsSinceEpoch(value.toInt());
-              return Transform.rotate(
-                angle: 1.57, // Rotation de 90 degrés (vertical)
-                child: Text("${date.hour}H${date.minute}:${date.second}",
-                    style: TextStyle(fontSize: 10)),
+              if (value <= 0 || value.toInt() % 30 != 0) return const SizedBox();
+              return Text(
+                formatTime(value),
+                style: const TextStyle(fontSize: 10),
               );
             },
-            reservedSize: 32, // Ajustez pour laisser de l'espace vertical
+            reservedSize: 22,
           ),
         ),
         topTitles: const AxisTitles(
@@ -453,8 +382,7 @@ class _AnalyticsState extends State<Analytics> {
           sideTitles: SideTitles(
             showTitles: true,
             getTitlesWidget: (value, meta) => Text("${value.toInt()} lm"),
-            // Lumens
-            reservedSize: 28, // Espace pour les labels
+            reservedSize: 40,
           ),
         ),
       ),
@@ -471,15 +399,14 @@ class _AnalyticsState extends State<Analytics> {
         LineChartBarData(
           spots: _lightSpots,
           isCurved: true,
-          // Ligne courbée
           color: Colors.blue,
           barWidth: 3,
           belowBarData: BarAreaData(show: false),
+          dotData: FlDotData(show: true),
         ),
       ],
     );
   }
-
   Future<List<List<dynamic>>?> getTemperatureData() async {
     List<List<dynamic>> temperatureData = [];
 

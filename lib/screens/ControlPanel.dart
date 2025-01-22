@@ -50,14 +50,28 @@ class _ControlPanelState extends State<ControlPanel> {
   );
 
 
+  late Timer displayTimer;
+  late Timer saveTimer;
+
   @override
   void initState() {
     super.initState();
     _loadThresholdSettings();
-    timer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
-      updateSensors();
+
+    // Timer pour mettre à jour l'affichage toutes les 2 secondes
+    displayTimer = Timer.periodic(const Duration(seconds: 2), (Timer t) {
+      updateDisplay();
+    });
+
+    // Timer pour sauvegarder les données toutes les 2 minutes
+    saveTimer = Timer.periodic(const Duration(minutes: 1), (Timer t) {
+      saveData();
     });
   }
+
+
+
+
 
   Future<void> _loadThresholdSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -94,9 +108,61 @@ class _ControlPanelState extends State<ControlPanel> {
 
   @override
   void dispose() {
-    timer.cancel();
+    displayTimer.cancel();
+    saveTimer.cancel();
     super.dispose();
   }
+
+  void updateDisplay() async {
+    // Mettre à jour uniquement l'affichage sans sauvegarder
+    try {
+      final response = await getPhotoCell();
+      final luminosityValue = jsonDecode(response.body)["value"];
+      setState(() {
+        luminosity = "$luminosityValue lumens";
+      });
+
+      _checkThresholdAndUpdateLED(luminosityValue);
+    } catch (e) {
+      setState(() {
+        luminosity = "Erreur";
+      });
+    }
+
+    try {
+      final response = await getTemps();
+      setState(() async {
+        if(await SettingsManager.celsiusSelected()){
+          temperature = jsonDecode(response.body)["temperature_celsius"].toStringAsFixed(2) + " °C";
+        } else {
+          temperature = jsonDecode(response.body)["temperature_fahrenheit"].toStringAsFixed(2) + " °F";
+        }
+      });
+    } catch (e) {
+      setState(() {
+        temperature = "Erreur";
+      });
+    }
+  }
+
+  void saveData() async {
+    // Sauvegarder les données dans Firebase
+    try {
+      final responseLight = await getPhotoCell();
+      final luminosityValue = jsonDecode(responseLight.body)["value"];
+      addLightData(int.parse(luminosityValue));
+
+      final responseTemp = await getTemps();
+      final tempData = jsonDecode(responseTemp.body);
+      addTemperatureData(
+          double.parse(tempData["temperature_celsius"].toStringAsFixed(2)),
+          double.parse(tempData["temperature_fahrenheit"].toStringAsFixed(2))
+      );
+    } catch (e) {
+      print('Erreur lors de la sauvegarde des données: $e');
+    }
+  }
+
 
 
   void updateSensors() async {
