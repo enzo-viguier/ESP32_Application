@@ -1,13 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:esp32_app/utils/getSettings.dart';
-import 'package:mockito/mockito.dart';
+import 'package:esp32_app/utils/get_settings.dart';
 import 'package:mockito/annotations.dart';
 
 @GenerateMocks([SharedPreferences])
 void main() {
   group('SettingsManager Tests', () {
-    late SharedPreferences prefs;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({

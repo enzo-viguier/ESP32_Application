@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:esp32_app/screens/ControlPanel.dart';
+import 'package:esp32_app/screens/control_panel.dart';
 
 void main() {
   group('ControlPanel Widget Tests', () {
     testWidgets('ControlPanel renders correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: ControlPanel(),
         ),
       );
@@ -18,7 +18,7 @@ void main() {
 
     testWidgets('LED switch works correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: ControlPanel(),
         ),
       );
@@ -32,7 +32,7 @@ void main() {
 
     testWidgets('Music dropdown shows correct options', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: ControlPanel(),
         ),
       );
