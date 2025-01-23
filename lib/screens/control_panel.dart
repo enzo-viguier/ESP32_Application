@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
-import 'package:esp32_app/utils/getSettings.dart';
+import 'package:esp32_app/utils/get_settings.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/apiCall.dart';
+import '../utils/api_call.dart';
 import '../utils/sensor__data_manager.dart';
 
 class ControlPanel extends StatefulWidget {
@@ -159,7 +158,7 @@ class _ControlPanelState extends State<ControlPanel> {
           double.parse(tempData["temperature_fahrenheit"].toStringAsFixed(2))
       );
     } catch (e) {
-      print('Erreur lors de la sauvegarde des données: $e');
+      logger.e('Erreur lors de la sauvegarde des données');
     }
   }
 
@@ -283,9 +282,9 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    final r = color.red.toString();
-    final g = color.green.toString();
-    final b = color.blue.toString();
+    final r = color.r.toString();
+    final g = color.g.toString();
+    final b = color.b.toString();
 
     try {
       await setLedColor(r, g, b);

@@ -1,18 +1,10 @@
-import 'dart:collection';
-import 'dart:ffi';
-
-import 'package:esp32_app/utils/getSettings.dart';
+import 'package:esp32_app/utils/get_settings.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import 'package:logger/logger.dart';
 
 Future<Response> getPhotoCell() {
   return apiCall("/light");
 }
-
-// Future<Response> getTemps({String unit = "c"}) {
-//   return apiCall("/light/$unit", params: {"unit": unit});
-// }
 
 Future<Response> getTemps() {
   return apiCall("/temperature");

@@ -40,14 +40,14 @@ Future<List<List<dynamic>>?> getTemperatureData() async {
     await FirebaseFirestore.instance.collection('temperature').get();
 
     List<List<dynamic>> temperatureData = [];
-    querySnapshot.docs.forEach((doc) {
+    for (var doc in querySnapshot.docs) {
       logger.i('Document fetched: ${doc.data()}');
       temperatureData.add([
         doc['timestamp'],
         doc['celsius'],
         doc['fahrenheit'],
       ]);
-    });
+    }
 
     logger.i('Temperature data successfully fetched: $temperatureData');
     return temperatureData;
@@ -92,13 +92,13 @@ Future<List<List<dynamic>>?> getLightData() async {
     await FirebaseFirestore.instance.collection('light').get();
 
     List<List<dynamic>> lightData = [];
-    querySnapshot.docs.forEach((doc) {
+    for (var doc in querySnapshot.docs) {
       logger.i('Document fetched: ${doc.data()}');
       lightData.add([
         doc['timestamp'],
         doc['lumens'],
       ]);
-    });
+    }
 
     logger.i('Light data successfully fetched: $lightData');
     return lightData;

@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsManager {
   static const String _addressPrefKey = 'esp32_address';
-  static const String _soundPrefKey = 'villager_sound_enabled';
   static const String _tempUnitPrefKey = 'temperature_unit_celsius';
 
   // Récupérer l'adresse ESP enregistrée

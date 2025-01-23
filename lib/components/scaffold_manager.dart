@@ -1,10 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:esp32_app/models/PlaySound.dart';
-import 'package:esp32_app/screens/Analytics.dart';
-import 'package:esp32_app/screens/ControlPanel.dart';
-import 'package:esp32_app/screens/Settings.dart';
+import 'package:esp32_app/models/play_sound.dart';
 
 class NavigationItem {
   final String title;

@@ -1,13 +1,13 @@
 import 'dart:async';
 // import 'package:esp32_app/navbar.dart';
-import 'package:esp32_app/screens/Analytics.dart';
-import 'package:esp32_app/screens/ControlPanel.dart';
-import 'package:esp32_app/screens/Settings.dart';
+import 'package:esp32_app/screens/analytics.dart';
+import 'package:esp32_app/screens/control_panel.dart';
+import 'package:esp32_app/screens/settings.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
-import 'components/ScaffoldManager.dart';
+import 'components/scaffold_manager.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
