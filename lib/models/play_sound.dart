@@ -7,15 +7,6 @@ class PlaySound {
 
   var logger = Logger();
 
-  // Liste des sons disponibles
-  // static const Map<String, String> sounds = {
-  //   'death': 'assets/sounds/villager-death.mp3',
-  //   'hit': 'assets/sounds/villager-hit.mp3',
-  //   'simple1': 'assets/sounds/villager-simple-1.mp3',
-  //   'simple2': 'assets/sounds/villager-simple-2.mp3',
-  //   'skibidi': 'assets/sounds/villager-skibidi.mp3',
-  // };
-
   static const Map<String, String> sounds = {
     'death': 'sounds/villager-death.mp3',
     'hit': 'sounds/villager-hit.mp3',

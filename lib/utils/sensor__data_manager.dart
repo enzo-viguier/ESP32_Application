@@ -18,21 +18,6 @@ Future<void> addTemperatureData(double celsius, double fahrenheit) async {
   logger.i('Temperature data added');
 }
 
-// Future<List<List<dynamic>>?> getTemperatureData() async {
-//   List<List<dynamic>> temperatureData = [];
-//
-//   // Récupère les documents de la collection temperature
-//   QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance.collection('temperature').get();
-//
-//   // Parcours les documents
-//   querySnapshot.docs.forEach((doc) {
-//     // Ajoute les données à la liste temperatureData
-//     temperatureData.add([doc['timestamp'], doc['celsius'], doc['fahrenheit']]);
-//   });
-//
-//   return temperatureData;
-// }
-
 Future<List<List<dynamic>>?> getTemperatureData() async {
   try {
     logger.i('Fetching temperature data from Firestore...');
@@ -59,6 +44,7 @@ Future<List<List<dynamic>>?> getTemperatureData() async {
 
 
 // == Light Data ==
+
 Future<void> addLightData(int lumens) async {
   String timestamp = DateTime.now().toIso8601String();
 
@@ -69,21 +55,6 @@ Future<void> addLightData(int lumens) async {
   });
 
 }
-
-// Future<List<List<dynamic>>?> getLightData() async {
-//   List<List<dynamic>> lightData = [];
-//
-//   // Récupère les documents de la collection light
-//   QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance.collection('light').get();
-//
-//   // Parcours les documents
-//   querySnapshot.docs.forEach((doc) {
-//     // Ajoute les données à la liste lightData
-//     lightData.add([doc['timestamp'], doc['lumens']]);
-//   });
-//
-//   return lightData;
-// }
 
 Future<List<List<dynamic>>?> getLightData() async {
   try {

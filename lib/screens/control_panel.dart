@@ -68,10 +68,6 @@ class _ControlPanelState extends State<ControlPanel> {
     });
   }
 
-
-
-
-
   Future<void> _loadThresholdSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -162,8 +158,6 @@ class _ControlPanelState extends State<ControlPanel> {
     }
   }
 
-
-
   void updateSensors() async {
     // Mettre à jour la luminosité
     try {
@@ -174,19 +168,10 @@ class _ControlPanelState extends State<ControlPanel> {
         addLightData(int.parse(luminosityValue));
       });
 
-      // Vérifier le seuil et mettre à jour la LED si nécessaire
       _checkThresholdAndUpdateLED(luminosityValue);
 
     } catch (e) {
       setState(() {
-
-        // TODO : ajout temporaire dans la BD pour les tests
-        // Variable temporaire pour les tests de la luminosité (entre 1000 et 3000) en int
-        // var tmpLuminosity = 1000 + (3000 - 1000) * Random().nextInt(1000);
-        //
-        // addLightData(tmpLuminosity);
-        // ====
-
         luminosity = "Erreur";
       });
     }
@@ -204,15 +189,6 @@ class _ControlPanelState extends State<ControlPanel> {
       });
     } catch (e) {
       setState(() {
-
-        // TODO : ajout temporaire dans la BD pour les tests
-        // var tmpCelsius = 20 + (30 - 20) * Random().nextDouble();
-        //
-        // var tmpFahrenheit = (tmpCelsius * 9/5) + 32;
-        //
-        // addTemperatureData(tmpCelsius, tmpFahrenheit);
-        // ====
-
         temperature = "Erreur";
       });
     }
