@@ -1,7 +1,13 @@
+import 'dart:io';
+
+import 'package:esp32_app/utils/sensor__data_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:esp32_app/utils/get_settings.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
 
 class Analytics extends StatefulWidget {
   const Analytics({super.key});
@@ -22,6 +28,131 @@ class _AnalyticsState extends State<Analytics> {
     _fetchTemperatureData();
     _fetchLightData();
   }
+
+  Future<void> requestStoragePermission() async {
+    if (await Permission.storage.request().isGranted) {
+      // Permission accordée
+      logger.i("Permission accordée pour accéder au stockage.");
+    } else if (await Permission.manageExternalStorage.request().isGranted) {
+      // Permission MANAGE_EXTERNAL_STORAGE pour Android 11+
+      logger.i("Permission spéciale accordée pour Android 11+.");
+    } else {
+      // Si refusée, afficher un message ou rediriger vers les paramètres
+      logger.i("Permission refusée pour accéder au stockage.");
+      if (await Permission.storage.isPermanentlyDenied ||
+          await Permission.manageExternalStorage.isPermanentlyDenied) {
+        await openAppSettings(); // Redirige l'utilisateur vers les paramètres
+      }
+    }
+  }
+
+  Future<String?> getDownloadsDirectoryPath() async {
+    if (Platform.isAndroid) {
+      Directory downloadsDirectory = Directory('/storage/emulated/0/Download');
+      if (await downloadsDirectory.exists()) {
+        return downloadsDirectory.path;
+      } else {
+        throw Exception("Le dossier Téléchargements n'existe pas.");
+      }
+    } else if (Platform.isIOS) {
+      // iOS ne permet pas un accès direct au dossier Téléchargements
+      Directory directory = await getApplicationDocumentsDirectory();
+      return directory.path; // Utiliser un dossier interne pour iOS
+    }
+    return null;
+  }
+
+  Future<void> _exportToPDF() async {
+    try {
+      await requestStoragePermission();
+
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                "Firebase Data",
+                style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 16),
+              pw.TableHelper.fromTextArray(
+                headers: ["Timestamp", "Temp (°C)", "Temp (°F)", "Lumens"],
+                data: List.generate(
+                  _temperatureSpots.length,
+                      (index) {
+                    String timestamp = formatTime(_temperatureSpots[index].x);
+                    String tempC = _temperatureSpots[index].y.toStringAsFixed(2);
+                    String tempF =
+                    (_temperatureSpots[index].y * 9 / 5 + 32).toStringAsFixed(2);
+                    String lumens = index < _lightSpots.length
+                        ? _lightSpots[index].y.toStringAsFixed(2)
+                        : "-";
+                    return [timestamp, tempC, tempF, lumens];
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      String? downloadsPath = await getDownloadsDirectoryPath();
+      if (downloadsPath == null) throw Exception("Chemin Téléchargements introuvable.");
+
+      final path = "$downloadsPath/data_export.pdf";
+      await File(path).writeAsBytes(await pdf.save());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Exportation en PDF réussie")),
+      );
+    } catch (e) {
+      logger.e("Erreur lors de l'exportation en PDF : $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur lors de l'exportation en PDF")),
+      );
+    }
+  }
+
+  Future<void> _exportToCSV() async {
+    try {
+      await requestStoragePermission(); // Demander la permission
+
+      String? downloadsPath = await getDownloadsDirectoryPath();
+      if (downloadsPath == null) throw Exception("Chemin Téléchargements introuvable.");
+
+      final path = "$downloadsPath/data_export.csv";
+
+      final file = File(path);
+
+      // Collecter les données de température
+      String csvContent = "Timestamp,Temp (°C),Temp (°F),Lumens\n";
+      for (int i = 0; i < _temperatureSpots.length; i++) {
+        String timestamp = formatTime(_temperatureSpots[i].x);
+        String tempC = _temperatureSpots[i].y.toStringAsFixed(2);
+        String tempF = (_temperatureSpots[i].y * 9 / 5 + 32).toStringAsFixed(2);
+        String lumens = i < _lightSpots.length ? _lightSpots[i].y.toStringAsFixed(2) : "-";
+        csvContent += "$timestamp,$tempC,$tempF,$lumens\n";
+      }
+
+      // Sauvegarde dans un fichier CSV
+      await file.writeAsString(csvContent);
+      logger.i("Fichier CSV exporté : $path");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Exportation en CSV réussie")),
+      );
+
+    } catch (e) {
+      logger.e("Erreur lors de l'exportation en CSV : $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erreur lors de l'exportation en CSV")),
+      );
+    }
+  }
+
 
   Future<void> _loadSettings() async {
     // Récupère le paramètre "Celsius ou Fahrenheit" depuis SettingManager
@@ -100,8 +231,42 @@ class _AnalyticsState extends State<Analytics> {
             Expanded(
               child: LineChart(_lightChart()),
             ),
+            const SizedBox(height: 24),
+            // Add export buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _exportToPDF,
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('Exporter en PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _exportToCSV,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Exporter en CSV'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
+
       ),
     );
   }
